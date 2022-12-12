@@ -16,5 +16,5 @@
 
 from neptune_detectron2.impl import (
     __version__,
-    # TODO: add objects that are to be imported from the impl package e.g. NeptuneCallback
+    NeptuneHook,
 )
