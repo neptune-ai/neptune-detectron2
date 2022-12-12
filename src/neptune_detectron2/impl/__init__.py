@@ -20,8 +20,10 @@ __all__ = [
 ]
 
 import warnings
-
-from typing import Optional, Any
+from typing import (
+    Any,
+    Optional,
+)
 
 try:
     # neptune-client=0.9.0+ package structure
@@ -35,11 +37,9 @@ except ImportError:
     from neptune.internal.utils import verify_type
     from neptune.internal.utils.compatibility import expect_not_an_experiment
 
-from neptune.new.metadata_containers import Run
-
 import detectron2
-
 from detectron2.engine import hooks
+from neptune.new.metadata_containers import Run
 
 from neptune_detectron2.impl.version import __version__
 
@@ -49,14 +49,14 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/detectron2"
 # TODO: Implementation of neptune-detectron2 here
 class NeptuneHook(hooks.HookBase):
     def __init__(
-            self,
-            *,
-            run: Optional[Run] = None,
-            base_namespace: str = "training",
-            smoothing_window_size: int = 20,
-            log_model: bool = False,
-            log_checkpoints: bool = False,
-            **kwargs: Any,
+        self,
+        *,
+        run: Optional[Run] = None,
+        base_namespace: str = "training",
+        smoothing_window_size: int = 20,
+        log_model: bool = False,
+        log_checkpoints: bool = False,
+        **kwargs: Any,
     ):
         self._window_size = smoothing_window_size
         self.log_model = log_model
@@ -74,6 +74,8 @@ class NeptuneHook(hooks.HookBase):
         self.base_handler = self._run[base_namespace]
 
         self.base_handler[INTEGRATION_VERSION_KEY] = detectron2.__version__
+        verify_type("run", self._run, Run)
+        expect_not_an_experiment(self._run)
 
     def _log_checkpoint(self, final: bool = False) -> None:
         if self.trainer.checkpointer is None:
@@ -87,14 +89,13 @@ class NeptuneHook(hooks.HookBase):
             path = path.format(f"iter_{self.trainer.iter}")
 
         if self.trainer.checkpointer.has_checkpoint():
-            self._run[path].upload(
-                self.trainer.checkpointer.get_checkpoint_file())
+            self._run[path].upload(self.trainer.checkpointer.get_checkpoint_file())
         else:
             warnings.warn(f"Checkpoints do not exist at target directory {self.trainer.checkpointer.save_dir}.")
 
     def before_train(self) -> None:
-        self.base_handler['config'] = self.trainer.cfg
-        self.base_handler['model/summary'] = str(self.trainer.model)
+        self.base_handler["config"] = self.trainer.cfg
+        self.base_handler["model/summary"] = str(self.trainer.model)
 
     def after_step(self) -> None:
         if self.trainer.iter % self._window_size != 0:

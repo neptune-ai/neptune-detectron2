@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 
+__all__ = [
+    "NeptuneHook",
+    "__version__",
+]
+
 from neptune_detectron2.impl import (
-    __version__,
     NeptuneHook,
+    __version__,
 )
