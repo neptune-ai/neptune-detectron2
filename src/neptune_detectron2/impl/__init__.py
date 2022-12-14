@@ -46,7 +46,6 @@ from neptune_detectron2.impl.version import __version__
 INTEGRATION_VERSION_KEY = "source_code/integrations/detectron2"
 
 
-# TODO: Implementation of neptune-detectron2 here
 class NeptuneHook(hooks.HookBase):
     def __init__(
         self,
@@ -109,5 +108,6 @@ class NeptuneHook(hooks.HookBase):
             self._log_checkpoint()
 
     def after_train(self) -> None:
-        self._log_checkpoint(final=True)
+        if self.log_model:
+            self._log_checkpoint(final=True)
         self._run.stop()
