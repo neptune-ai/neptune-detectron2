@@ -110,4 +110,5 @@ class NeptuneHook(hooks.HookBase):
     def after_train(self) -> None:
         if self.log_model:
             self._log_checkpoint(final=True)
+        self._run.sync()
         self._run.stop()
