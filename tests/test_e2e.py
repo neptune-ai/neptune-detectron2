@@ -23,7 +23,7 @@ def test_e2e(cfg, trainer):
 
     npt_run = neptune.init_run(custom_run_id=custom_run_id)
 
-    run.sync()
+    npt_run.sync()
 
     assert npt_run.exists("training/config")
 
