@@ -1,4 +1,5 @@
 import os
+import time
 from uuid import uuid4
 
 import neptune.new as neptune
@@ -21,7 +22,7 @@ def test_e2e(cfg, trainer):
 
     npt_run = neptune.init_run(custom_run_id=custom_run_id)
 
-    npt_run.sync()
+    time.sleep(30)
 
     assert npt_run.exists("training/config")
 
