@@ -1,5 +1,4 @@
 import os
-import time
 from uuid import uuid4
 
 import neptune.new as neptune
@@ -12,21 +11,23 @@ from tests.utils import get_images
 def test_e2e(cfg, trainer):
     custom_run_id = str(uuid4())
 
+    run = neptune.init_run()
+
     get_images()
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     DetectionCheckpointer(trainer.model).load(cfg.MODEL.WEIGHTS)
     trainer.resume_or_load(resume=False)
 
-    trainer.register_hooks([NeptuneHook(log_checkpoints=True, log_model=True, custom_run_id=custom_run_id)])
+    trainer.register_hooks([NeptuneHook(run=run, log_checkpoints=True, log_model=True, custom_run_id=custom_run_id)])
     trainer.train()
 
     npt_run = neptune.init_run(custom_run_id=custom_run_id)
 
-    time.sleep(30)
+    run.sync()
 
     assert npt_run.exists("training/config")
 
-    # assert npt_run.exists("model/checkpoints/checkpoint_iter_0")
+    assert npt_run.exists("model/checkpoints/checkpoint_iter_0")
 
     assert npt_run.exists("model/checkpoints/checkpoint_final")
 
