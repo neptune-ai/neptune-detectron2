@@ -26,7 +26,7 @@ def test_e2e(cfg, trainer):
 
     assert npt_run.exists("training/config")
 
-    assert npt_run.exists("model/checkpoints/checkpoint_iter_0")
+    # assert npt_run.exists("model/checkpoints/checkpoint_iter_0")
 
     assert npt_run.exists("model/checkpoints/checkpoint_final")
 
