@@ -1,5 +1,4 @@
 import os
-from uuid import uuid4
 
 import neptune.new as neptune
 from detectron2.checkpoint import DetectionCheckpointer
@@ -9,19 +8,20 @@ from tests.utils import get_images
 
 
 def test_e2e(cfg, trainer):
-    custom_run_id = str(uuid4())
 
     run = neptune.init_run()
+    run_id = run["sys/id"].fetch()
 
     get_images()
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     DetectionCheckpointer(trainer.model).load(cfg.MODEL.WEIGHTS)
     trainer.resume_or_load(resume=False)
 
-    trainer.register_hooks([NeptuneHook(run=run, log_checkpoints=True, log_model=True, custom_run_id=custom_run_id)])
+    hook = NeptuneHook(run=run, log_checkpoints=True, log_model=True)
+    trainer.register_hooks([hook])
     trainer.train()
 
-    npt_run = neptune.init_run(custom_run_id=custom_run_id)
+    npt_run = neptune.init_run(with_id=run_id)
 
     assert npt_run.exists("training/config")
 
