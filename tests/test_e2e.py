@@ -1,7 +1,6 @@
 import os
 
 import neptune.new as neptune
-from detectron2.checkpoint import DetectionCheckpointer
 
 from src.neptune_detectron2 import NeptuneHook
 from tests.utils import get_images
@@ -14,7 +13,6 @@ def test_e2e(cfg, trainer):
 
     get_images()
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-    DetectionCheckpointer(trainer.model).load(cfg.MODEL.WEIGHTS)
     trainer.resume_or_load(resume=False)
 
     hook = NeptuneHook(run=run, log_checkpoints=True, log_model=True)

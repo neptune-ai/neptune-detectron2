@@ -81,6 +81,7 @@ class NeptuneHook(hooks.HookBase):
             warnings.warn("Checkpointer not present for the current trainer.")
             return
 
+        self.trainer.checkpointer.save(f"iter_{self.trainer.iter}")
         path = "model/checkpoints/checkpoint_{}"
         if final:
             path = path.format("final")
@@ -106,7 +107,6 @@ class NeptuneHook(hooks.HookBase):
 
         if self.log_checkpoints:
             self._log_checkpoint()
-            self._run.sync()
 
     def after_train(self) -> None:
         if self.log_model:
