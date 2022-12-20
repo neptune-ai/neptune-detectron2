@@ -87,7 +87,7 @@ class NeptuneHook(hooks.HookBase):
         self.base_handler[INTEGRATION_VERSION_KEY] = detectron2.__version__
 
     def _log_config(self) -> None:
-        if hasattr(self.trainer, "cfg"):
+        if hasattr(self.trainer, "cfg") and isinstance(self.trainer.cfg, dict):
             self.base_handler["config"] = self.trainer.cfg
 
     def _log_model(self) -> None:
