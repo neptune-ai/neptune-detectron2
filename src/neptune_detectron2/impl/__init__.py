@@ -40,8 +40,10 @@ except ImportError:
     from neptune.internal.utils.compatibility import expect_not_an_experiment
 
 import detectron2
+from detectron2.checkpoint import Checkpointer
 from detectron2.engine import hooks
 from neptune.new.metadata_containers import Run
+from torch.nn import Module
 
 from neptune_detectron2.impl.version import __version__
 
@@ -63,23 +65,37 @@ class NeptuneHook(hooks.HookBase):
         self.log_model = log_model
         self.log_checkpoints = log_checkpoints
 
-        if self._window_size <= 0:
-            raise ValueError(f"Update freq should be greater than 0. Got {self._window_size}.")
-        if not isinstance(self._window_size, int):
-            raise TypeError(f"Smoothing window size should be of type int. Got {type(self._window_size)} instead.")
+        self._verify_window_size()
 
         self._run = neptune.init_run(**kwargs) if not isinstance(run, Run) else run
 
         if base_namespace.endswith("/"):
             self._base_namespace = base_namespace[:-1]
+
         self.base_handler = self._run[base_namespace]
 
-        self.base_handler[INTEGRATION_VERSION_KEY] = detectron2.__version__
         verify_type("run", self._run, Run)
         expect_not_an_experiment(self._run)
 
+    def _verify_window_size(self) -> None:
+        if self._window_size <= 0:
+            raise ValueError(f"Update freq should be greater than 0. Got {self._window_size}.")
+        if not isinstance(self._window_size, int):
+            raise TypeError(f"Smoothing window size should be of type int. Got {type(self._window_size)} instead.")
+
+    def _log_integration_version(self) -> None:
+        self.base_handler[INTEGRATION_VERSION_KEY] = detectron2.__version__
+
+    def _log_config(self) -> None:
+        if hasattr(self.trainer, "cfg"):
+            self.base_handler["config"] = self.trainer.cfg
+
+    def _log_model(self) -> None:
+        if hasattr(self.trainer, "model") and isinstance(self.trainer.model, Module):
+            self.base_handler["model/summary"] = str(self.trainer.model)
+
     def _log_checkpoint(self, final: bool = False) -> None:
-        if self.trainer.checkpointer is None:
+        if not self._can_save_checkpoint():
             warnings.warn("Checkpointer not present for the current trainer.")
             return
 
@@ -95,23 +111,33 @@ class NeptuneHook(hooks.HookBase):
         else:
             warnings.warn(f"Checkpoints do not exist at target directory {self.trainer.checkpointer.save_dir}.")
 
+    def _log_metrics(self) -> None:
+        storage = detectron2.utils.events.get_event_storage()
+        for k, (v, _) in storage.latest_with_smoothing_hint(self._window_size).items():
+            self.base_handler[f"metrics/{k}"].log(v)
+
     def _clean_output_dir(self) -> None:
         neptune_checkpoints = glob(os.path.join(self.trainer.cfg.OUTPUT_DIR, "neptune_iter_*"))
 
         for checkpoint in neptune_checkpoints:
             os.remove(checkpoint)
 
+    def _can_save_checkpoint(self) -> bool:
+        return hasattr(self.trainer, "checkpointer") and isinstance(self.trainer.checkpointer, Checkpointer)
+
+    def _should_perform_after_step(self) -> bool:
+        return self.trainer.iter % self._window_size == 0
+
     def before_train(self) -> None:
-        self.base_handler["config"] = self.trainer.cfg
-        self.base_handler["model/summary"] = str(self.trainer.model)
+        self._log_integration_version()
+        self._log_config()
+        self._log_model()
 
     def after_step(self) -> None:
-        if self.trainer.iter % self._window_size != 0:
+        if not self._should_perform_after_step():
             return
 
-        storage = detectron2.utils.events.get_event_storage()
-        for k, (v, _) in storage.latest_with_smoothing_hint(self._window_size).items():
-            self.base_handler[f"metrics/{k}"].log(v)
+        self._log_metrics()
 
         if self.log_checkpoints:
             self._log_checkpoint()
