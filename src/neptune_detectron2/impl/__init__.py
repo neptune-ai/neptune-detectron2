@@ -19,7 +19,9 @@ __all__ = [
     "NeptuneHook",
 ]
 
+import os
 import warnings
+from glob import glob
 from typing import (
     Any,
     Optional,
@@ -81,7 +83,7 @@ class NeptuneHook(hooks.HookBase):
             warnings.warn("Checkpointer not present for the current trainer.")
             return
 
-        self.trainer.checkpointer.save(f"iter_{self.trainer.iter}")
+        self.trainer.checkpointer.save(f"neptune_iter_{self.trainer.iter}")
         path = "model/checkpoints/checkpoint_{}"
         if final:
             path = path.format("final")
@@ -92,6 +94,12 @@ class NeptuneHook(hooks.HookBase):
             self._run[path].upload(self.trainer.checkpointer.get_checkpoint_file())
         else:
             warnings.warn(f"Checkpoints do not exist at target directory {self.trainer.checkpointer.save_dir}.")
+
+    def _clean_output_dir(self) -> None:
+        neptune_checkpoints = glob(os.path.join(self.trainer.cfg.OUTPUT_DIR, "neptune_iter_*"))
+
+        for checkpoint in neptune_checkpoints:
+            os.remove(checkpoint)
 
     def before_train(self) -> None:
         self.base_handler["config"] = self.trainer.cfg
@@ -111,4 +119,7 @@ class NeptuneHook(hooks.HookBase):
     def after_train(self) -> None:
         if self.log_model:
             self._log_checkpoint(final=True)
+
+        self._run.sync()
         self._run.stop()
+        self._clean_output_dir()
