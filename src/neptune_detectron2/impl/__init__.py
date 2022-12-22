@@ -69,12 +69,13 @@ class NeptuneHook(hooks.HookBase):
 
         self._run = neptune.init_run(**kwargs) if not isinstance(run, Run) else run
 
+        verify_type("run", self._run, Run)
+
         if base_namespace.endswith("/"):
             self._base_namespace = base_namespace[:-1]
 
         self.base_handler = self._run[base_namespace]
 
-        verify_type("run", self._run, Run)
         expect_not_an_experiment(self._run)
 
     def _verify_window_size(self) -> None:
