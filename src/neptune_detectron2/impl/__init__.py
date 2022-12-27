@@ -21,7 +21,6 @@ __all__ = [
 
 import os
 import warnings
-from glob import glob
 from typing import (
     Any,
     Optional,
@@ -43,6 +42,7 @@ import detectron2
 from detectron2.checkpoint import Checkpointer
 from detectron2.engine import hooks
 from neptune.new.metadata_containers import Run
+from neptune.new.types import File
 from torch.nn import Module
 
 from neptune_detectron2.impl.version import __version__
@@ -108,7 +108,12 @@ class NeptuneHook(hooks.HookBase):
             path = path.format(f"iter_{self.trainer.iter}")
 
         if self.trainer.checkpointer.has_checkpoint():
-            self._run[path].upload(self.trainer.checkpointer.get_checkpoint_file())
+            checkpoint_path = self.trainer.checkpointer.get_checkpoint_file()
+
+            with open(checkpoint_path, "rb") as fp:
+                self._run[path] = File.from_stream(fp)
+            os.remove(checkpoint_path)
+
         else:
             warnings.warn(f"Checkpoints do not exist at target directory {self.trainer.checkpointer.save_dir}.")
 
@@ -116,12 +121,6 @@ class NeptuneHook(hooks.HookBase):
         storage = detectron2.utils.events.get_event_storage()
         for k, (v, _) in storage.latest_with_smoothing_hint(self._window_size).items():
             self.base_handler[f"metrics/{k}"].log(v)
-
-    def _clean_output_dir(self) -> None:
-        neptune_checkpoints = glob(os.path.join(self.trainer.cfg.OUTPUT_DIR, "neptune_iter_*"))
-
-        for checkpoint in neptune_checkpoints:
-            os.remove(checkpoint)
 
     def _can_save_checkpoint(self) -> bool:
         return hasattr(self.trainer, "checkpointer") and isinstance(self.trainer.checkpointer, Checkpointer)
@@ -149,4 +148,3 @@ class NeptuneHook(hooks.HookBase):
 
         self._run.sync()
         self._run.stop()
-        self._clean_output_dir()
