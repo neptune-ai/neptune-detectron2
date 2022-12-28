@@ -29,5 +29,5 @@ def test_e2e(cfg, trainer):
 
     assert isinstance(npt_run["training/model/summary"].fetch(), str)
 
-    loss_vals = npt_run["training/metrics/total_loss"].fetch_values()
-    assert 0 < loss_vals.iloc[-1]["value"] < 1
+    cls_accuracy_vals = npt_run["training/metrics/fast_rcnn/cls_accuracy"].fetch_values()
+    assert 0 < cls_accuracy_vals.iloc[-1]["value"] <= 1
