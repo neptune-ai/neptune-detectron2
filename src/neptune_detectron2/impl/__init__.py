@@ -101,21 +101,15 @@ class NeptuneHook(hooks.HookBase):
             return
 
         self.trainer.checkpointer.save(f"neptune_iter_{self.trainer.iter}")
-        path = "model/checkpoints/checkpoint_{}"
-        if final:
-            path = path.format("final")
-        else:
-            path = path.format(f"iter_{self.trainer.iter}")
+        neptune_model_path = "model/checkpoints/checkpoint_{}"
 
-        if self.trainer.checkpointer.has_checkpoint():
-            checkpoint_path = self.trainer.checkpointer.get_checkpoint_file()
+        neptune_model_path = neptune_model_path.format("final" if final else f"iter_{self.trainer.iter}")
 
-            with open(checkpoint_path, "rb") as fp:
-                self._run[path] = File.from_stream(fp)
-            os.remove(checkpoint_path)
+        checkpoint_path = self.trainer.checkpointer.get_checkpoint_file()
 
-        else:
-            warnings.warn(f"Checkpoints do not exist at target directory {self.trainer.checkpointer.save_dir}.")
+        with open(checkpoint_path, "rb") as fp:
+            self._run[neptune_model_path] = File.from_stream(fp)
+        os.remove(checkpoint_path)
 
     def _log_metrics(self) -> None:
         storage = detectron2.utils.events.get_event_storage()
