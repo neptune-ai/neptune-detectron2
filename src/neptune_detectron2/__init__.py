@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 
+__all__ = [
+    "NeptuneHook",
+    "__version__",
+]
+
 from neptune_detectron2.impl import (
+    NeptuneHook,
     __version__,
-    # TODO: add objects that are to be imported from the impl package e.g. NeptuneCallback
 )
