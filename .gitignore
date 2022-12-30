@@ -127,3 +127,5 @@ stream.bin
 
 #detectron2
 output/
+
+datasets/coco/train2014/*jpg
