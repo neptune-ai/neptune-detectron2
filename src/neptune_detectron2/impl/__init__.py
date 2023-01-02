@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+"""This module contains the NeptuneHook class.
+
+The class is used for automatic metadata logging to Neptune, during training and validation of detectron2 models."""
+
 __all__ = [
     "__version__",
     "NeptuneHook",
@@ -51,6 +55,30 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/detectron2"
 
 
 class NeptuneHook(hooks.HookBase):
+    """Hook implementation that sends the logs to [Neptune](https://neptune.ai).
+    Args:
+        run (`Run`, optional):
+            Pass a Neptune run object if you want to continue logging to an existing run. Read more about resuming
+            runs in the [docs](https://docs.neptune.ai/how-to-guides/neptune-api/resume-run).
+        base_namespace (`str`, optional, defaults to "training"):
+            In the Neptune run, the root namespace that will contain all the logged metadata.
+        smoothing_window_size (`int`, optional, defaults to 20):
+            This controls how often NeptuneHook should log metrics (and, optionally, checkpoints). The value must
+            be greater than zero, otherwise ValueError is raised.
+        log_model (`bool`, optional, defaults to False):
+            If True, uploads the final model checkpoint, whenever it is saved by the Trainer.
+            If False - does not upload the final checkpoint. Expects CheckpointHook to be present, otherwise raises
+            warning and does not perform any action.
+        log_checkpoints (`bool`, optional, defaults to False):
+            If True, uploads checkpoints whenever they are saved by the Trainer. If False - does not upload
+            checkpoints. Expects CheckpointHook to be present, otherwise raises warning and does not perform any
+            action.
+        **kwargs (optional):
+            Additional keyword arguments to be passed directly to the
+            [neptune.init_run()](https://docs.neptune.ai/api-reference/neptune#.init_run) function when a new run is
+            created.
+    """
+
     def __init__(
         self,
         *,
@@ -123,11 +151,13 @@ class NeptuneHook(hooks.HookBase):
         return self.trainer.iter % self._window_size == 0
 
     def before_train(self) -> None:
+        """Log detectron2 version used, the config that the trainer uses and the underlying model summary."""
         self._log_integration_version()
         self._log_config()
         self._log_model()
 
     def after_step(self) -> None:
+        """Log metrics after step and optionally - model checkpoint."""
         if not self._should_perform_after_step():
             return
 
@@ -137,6 +167,7 @@ class NeptuneHook(hooks.HookBase):
             self._log_checkpoint()
 
     def after_train(self) -> None:
+        """Optionally save final model checkpoint. Sync the run and stop it."""
         if self.log_model:
             self._log_checkpoint(final=True)
 
