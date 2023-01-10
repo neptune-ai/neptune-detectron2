@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+"""This module contains the NeptuneHook class.
+
+The class is used for automatic metadata logging to Neptune, during training and validation of detectron2 models."""
+
 __all__ = [
     "__version__",
     "NeptuneHook",
@@ -51,6 +55,40 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/detectron2"
 
 
 class NeptuneHook(hooks.HookBase):
+    """Hook implementation that sends the logs to Neptune.
+
+    Args:
+        run: Pass a Neptune run object if you want to continue logging to an existing run.
+            Learn more about resuming runs in the docs: https://docs.neptune.ai/logging/to_existing_object
+        base_namespace: In the Neptune run, the root namespace that will contain all the logged metadata.
+        smoothing_window_size: How often NeptuneHook should log metrics (and checkpoints, if
+            log_checkpoints is set to True). The value must be greater than zero.
+            Example: Setting smoothing_window_size=10 will log metrics on every 10th epoch.
+        log_model: Whether to upload the final model checkpoint, whenever it is saved by the Trainer.
+            Expects CheckpointHook to be present.
+        log_checkpoints: Whether to upload checkpoints whenever they are saved by the Trainer.
+            Expects CheckpointHook to be present.
+        **kwargs (optional):
+            Additional keyword arguments to be passed directly to the neptune.init_run() function when a new run is
+            created. For details, see the docs: https://docs.neptune.ai/api/neptune/#init_run
+
+    Examples:
+
+        Creating a hook that logs the metadata to a new Neptune run, with optional arguments:
+
+            neptune_hook = NeptuneHook(
+                log_checkpoints=True,  # Log model checkpoints
+                smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
+                capture_stdout=False,  # Don't capture standard out stream (kwarg for the Neptune run)
+            )
+
+        Creating a hook that sends the logs to an existing Neptune run object:
+
+            import neptune.new as neptune
+            neptune_run = neptune.init_run()
+            neptune_hook = NeptuneHook(run=neptune_run)
+    """
+
     def __init__(
         self,
         *,
@@ -123,11 +161,13 @@ class NeptuneHook(hooks.HookBase):
         return self.trainer.iter % self._window_size == 0
 
     def before_train(self) -> None:
+        """Logs detectron2 version used, the config that the trainer uses, and the underlying model summary."""
         self._log_integration_version()
         self._log_config()
         self._log_model()
 
     def after_step(self) -> None:
+        """Logs metrics after step and optionally the model checkpoint."""
         if not self._should_perform_after_step():
             return
 
@@ -137,6 +177,7 @@ class NeptuneHook(hooks.HookBase):
             self._log_checkpoint()
 
     def after_train(self) -> None:
+        """Optionally saves the final model checkpoint. Syncs the run and stops it."""
         if self.log_model:
             self._log_checkpoint(final=True)
 
