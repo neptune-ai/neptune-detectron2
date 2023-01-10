@@ -76,17 +76,17 @@ class NeptuneHook(hooks.HookBase):
 
         Creating a hook that logs the metadata to a new Neptune run, with optional arguments:
 
-        >>> neptune_hook = NeptuneHook(
-        ...     log_checkpoints=True,  # Log model checkpoints
-        ...     smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
-        ...     capture_stdout=False,  # Don't capture standard out stream (kwarg for the Neptune run)
-        ... )
+            neptune_hook = NeptuneHook(
+                log_checkpoints=True,  # Log model checkpoints
+                smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
+                capture_stdout=False,  # Don't capture standard out stream (kwarg for the Neptune run)
+            )
 
         Creating a hook that sends the logs to an existing Neptune run object:
 
-        >>> import neptune.new as neptune
-        >>> neptune_run = neptune.init_run()
-        >>> neptune_hook = NeptuneHook(run=neptune_run)
+            import neptune.new as neptune
+            neptune_run = neptune.init_run()
+            neptune_hook = NeptuneHook(run=neptune_run)
     """
 
     def __init__(
