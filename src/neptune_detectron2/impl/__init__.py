@@ -34,13 +34,11 @@ try:
     # neptune-client=0.9.0+ package structure
     import neptune.new as neptune
     from neptune.new.internal.utils import verify_type
-    from neptune.new.internal.utils.compatibility import expect_not_an_experiment
 
 except ImportError:
     # neptune-client>=1.0.0 package structure
     import neptune
     from neptune.internal.utils import verify_type
-    from neptune.internal.utils.compatibility import expect_not_an_experiment
 
 import detectron2
 from detectron2.checkpoint import Checkpointer
@@ -113,8 +111,6 @@ class NeptuneHook(hooks.HookBase):
             self._base_namespace = base_namespace[:-1]
 
         self.base_handler = self._run[base_namespace]
-
-        expect_not_an_experiment(self._run)
 
     def _verify_window_size(self) -> None:
         if self._window_size <= 0:
