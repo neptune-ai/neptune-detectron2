@@ -116,6 +116,8 @@ class NeptuneHook(hooks.HookBase):
 
         self.base_handler = self._run[base_namespace]
 
+        self._root_object = self._run.get_root_object() if isinstance(self._run, Handler) else self._run
+
     def _verify_window_size(self) -> None:
         if self._window_size <= 0:
             raise ValueError(f"Update freq should be greater than 0. Got {self._window_size}.")
@@ -123,7 +125,7 @@ class NeptuneHook(hooks.HookBase):
             raise TypeError(f"Smoothing window size should be of type int. Got {type(self._window_size)} instead.")
 
     def _log_integration_version(self) -> None:
-        self.base_handler[INTEGRATION_VERSION_KEY] = detectron2.__version__
+        self._root_object[INTEGRATION_VERSION_KEY] = detectron2.__version__
 
     def _log_config(self) -> None:
         if hasattr(self.trainer, "cfg") and isinstance(self.trainer.cfg, dict):
@@ -146,7 +148,7 @@ class NeptuneHook(hooks.HookBase):
         checkpoint_path = self.trainer.checkpointer.get_checkpoint_file()
 
         with open(checkpoint_path, "rb") as fp:
-            self._run[neptune_model_path] = File.from_stream(fp)
+            self._root_object[neptune_model_path] = File.from_stream(fp)
         os.remove(checkpoint_path)
 
     def _log_metrics(self) -> None:
@@ -181,8 +183,5 @@ class NeptuneHook(hooks.HookBase):
         if self.log_model:
             self._log_checkpoint(final=True)
 
-        if isinstance(self._run, Handler):
-            self._run = self._run.get_root_object()
-
-        self._run.sync()
-        self._run.stop()
+        self._root_object.sync()
+        self._root_object.stop()
