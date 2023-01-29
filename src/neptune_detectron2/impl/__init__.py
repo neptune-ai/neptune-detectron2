@@ -148,7 +148,7 @@ class NeptuneHook(hooks.HookBase):
         checkpoint_path = self.trainer.checkpointer.get_checkpoint_file()
 
         with open(checkpoint_path, "rb") as fp:
-            self._root_object[neptune_model_path] = File.from_stream(fp)
+            self._run[neptune_model_path] = File.from_stream(fp)
         os.remove(checkpoint_path)
 
     def _log_metrics(self) -> None:
