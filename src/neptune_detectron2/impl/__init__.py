@@ -60,7 +60,7 @@ class NeptuneHook(hooks.HookBase):
     """Hook implementation that sends the logs to Neptune.
 
     Args:
-        run: Pass a Neptune run or handler object if you want to continue logging to an existing run.
+        run: Pass a Neptune run or namespace handler object if you want to continue logging to an existing run.
             Learn more about resuming runs in the docs: https://docs.neptune.ai/logging/to_existing_object
         base_namespace: In the Neptune run, the root namespace that will contain all the logged metadata.
         smoothing_window_size: How often NeptuneHook should log metrics (and checkpoints, if
