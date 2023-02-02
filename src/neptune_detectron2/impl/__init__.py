@@ -27,19 +27,13 @@ __all__ = [
 
 import os
 import warnings
-from typing import (
-    Any,
-    Optional,
-)
 
 try:
     # neptune-client=0.9.0+ package structure
-    import neptune.new as neptune
     from neptune.new.internal.utils import verify_type
 
 except ImportError:
     # neptune-client>=1.0.0 package structure
-    import neptune
     from neptune.internal.utils import verify_type
 
 import detectron2
@@ -70,46 +64,38 @@ class NeptuneHook(hooks.HookBase):
             Expects CheckpointHook to be present.
         log_checkpoints: Whether to upload checkpoints whenever they are saved by the Trainer.
             Expects CheckpointHook to be present.
-        **kwargs (optional):
-            Additional keyword arguments to be passed directly to the neptune.init_run() function when a new run is
-            created. For details, see the docs: https://docs.neptune.ai/api/neptune/#init_run
 
     Examples:
-
-        Creating a hook that logs the metadata to a new Neptune run, with optional arguments:
-
-            neptune_hook = NeptuneHook(
-                log_checkpoints=True,  # Log model checkpoints
-                smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
-                capture_stdout=False,  # Don't capture standard out stream (kwarg for the Neptune run)
-            )
 
         Creating a hook that sends the logs to an existing Neptune run object:
 
             import neptune.new as neptune
             neptune_run = neptune.init_run()
-            neptune_hook = NeptuneHook(run=neptune_run)
+            neptune_hook = NeptuneHook(
+                run=neptune_run,
+                log_checkpoints=True,  # Log model checkpoints
+                smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
+            )
     """
 
     def __init__(
         self,
+        run: Run | Handler,
         *,
-        run: Optional[Run | Handler] = None,
         base_namespace: str = "training",
         smoothing_window_size: int = 20,
         log_model: bool = False,
         log_checkpoints: bool = False,
-        **kwargs: Any,
     ):
+        verify_type("run", run, (Run, Handler))
+
+        self._run = run
+
         self._window_size = smoothing_window_size
         self.log_model = log_model
         self.log_checkpoints = log_checkpoints
 
         self._verify_window_size()
-
-        self._run = neptune.init_run(**kwargs) if not run else run
-
-        verify_type("run", self._run, (Run, Handler))
 
         if base_namespace.endswith("/"):
             base_namespace = base_namespace[:-1]
@@ -179,9 +165,8 @@ class NeptuneHook(hooks.HookBase):
             self._log_checkpoint()
 
     def after_train(self) -> None:
-        """Optionally saves the final model checkpoint. Syncs the run and stops it."""
+        """Optionally saves the final model checkpoint. Syncs the run."""
         if self.log_model:
             self._log_checkpoint(final=True)
 
         self._root_object.sync()
-        self._root_object.stop()
