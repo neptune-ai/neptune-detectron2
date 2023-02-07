@@ -20,9 +20,9 @@ def test_e2e(cfg, trainer):
 
     assert run.exists("training/config")
 
-    assert run.exists("model/checkpoints/checkpoint_iter_0")
+    assert run.exists("training/model/checkpoints/checkpoint_iter_0")
 
-    assert run.exists("model/checkpoints/checkpoint_final")
+    assert run.exists("training/model/checkpoints/checkpoint_final")
 
     assert isinstance(run["training/model/summary"].fetch(), str)
 

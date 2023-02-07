@@ -1,3 +1,9 @@
+## neptune-detectron2 0.2.1
+
+### Fixes
+- Fixed logging checkpoints (base namespace was previously ignored) ([#8](https://github.com/neptune-ai/neptune-detectron2/pull/8))
+
+
 ## neptune-detectron2 0.2.0
 
 ### Fixes
