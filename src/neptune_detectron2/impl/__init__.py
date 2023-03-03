@@ -28,21 +28,14 @@ __all__ = [
 import os
 import warnings
 
-try:
-    # neptune-client=0.9.0+ package structure
-    from neptune.new.internal.utils import verify_type
-
-except ImportError:
-    # neptune-client>=1.0.0 package structure
-    from neptune.internal.utils import verify_type
-
 import detectron2
 from detectron2.checkpoint import Checkpointer
 from detectron2.engine import hooks
-from neptune.new.handler import Handler
-from neptune.new.metadata_containers import Run
-from neptune.new.types import File
-from neptune.new.utils import stringify_unsupported
+from neptune import Run
+from neptune.handler import Handler
+from neptune.internal.utils import verify_type
+from neptune.types import File
+from neptune.utils import stringify_unsupported
 from torch.nn import Module
 
 from neptune_detectron2.impl.version import __version__
@@ -69,7 +62,7 @@ class NeptuneHook(hooks.HookBase):
 
         Creating a hook that sends the logs to an existing Neptune run object:
 
-            import neptune.new as neptune
+            import neptune
             neptune_run = neptune.init_run()
             neptune_hook = NeptuneHook(
                 run=neptune_run,

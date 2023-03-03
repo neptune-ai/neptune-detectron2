@@ -1,6 +1,6 @@
 import os
 
-import neptune.new as neptune
+from neptune import init_run
 
 from src.neptune_detectron2 import NeptuneHook
 from tests.utils import get_images
@@ -8,7 +8,7 @@ from tests.utils import get_images
 
 def test_e2e(cfg, trainer):
 
-    run = neptune.init_run()
+    run = init_run()
 
     get_images()
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
