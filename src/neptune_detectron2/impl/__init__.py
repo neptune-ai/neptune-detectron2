@@ -47,9 +47,10 @@ class NeptuneHook(hooks.HookBase):
     """Hook implementation that sends the logs to Neptune.
 
     Args:
-        run: Pass a Neptune run or namespace handler object if you want to continue logging to an existing run.
-            Learn more about resuming runs in the docs: https://docs.neptune.ai/logging/to_existing_object
-        base_namespace: In the Neptune run, the root namespace that will contain all the logged metadata.
+        run: Neptune run object. You can also pass a namespace handler object;
+            for example, run["test"], in which case all metadata is logged under
+            the "test" namespace inside the run.
+        base_namespace: Root namespace where all metadata logged by the hook is stored.
         smoothing_window_size: How often NeptuneHook should log metrics (and checkpoints, if
             log_checkpoints is set to True). The value must be greater than zero.
             Example: Setting smoothing_window_size=10 will log metrics on every 10th epoch.
@@ -58,17 +59,14 @@ class NeptuneHook(hooks.HookBase):
         log_checkpoints: Whether to upload checkpoints whenever they are saved by the Trainer.
             Expects CheckpointHook to be present.
 
-    Examples:
-
-        Creating a hook that sends the logs to an existing Neptune run object:
-
-            import neptune
-            neptune_run = neptune.init_run()
-            neptune_hook = NeptuneHook(
-                run=neptune_run,
-                log_checkpoints=True,  # Log model checkpoints
-                smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
-            )
+    Example:
+        import neptune
+        neptune_run = neptune.init_run()
+        neptune_hook = NeptuneHook(
+            run=neptune_run,
+            log_checkpoints=True,  # Log model checkpoints
+            smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
+        )
     """
 
     def __init__(
