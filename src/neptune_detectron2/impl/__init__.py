@@ -67,6 +67,10 @@ class NeptuneHook(hooks.HookBase):
             log_checkpoints=True,  # Log model checkpoints
             smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
         )
+    
+    For more, see the docs:
+        Tutorial: https://docs.neptune.ai/integrations/detectron2/
+        API reference: https://docs.neptune.ai/api/integrations/detectron2/
     """
 
     def __init__(
