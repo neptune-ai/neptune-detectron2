@@ -74,7 +74,7 @@ class NeptuneHook(hooks.HookBase):
         neptune_hook = NeptuneHook(
             run=neptune_run,
             log_checkpoints=True,  # Log model checkpoints
-            smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
+            metrics_update_freq=10,  # Upload metrics and checkpoints every 10th epoch
         )
 
     For more, see the docs:
