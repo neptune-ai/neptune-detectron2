@@ -31,14 +31,23 @@ import warnings
 import detectron2
 from detectron2.checkpoint import Checkpointer
 from detectron2.engine import hooks
-from neptune import Run
-from neptune.handler import Handler
-from neptune.internal.utils import verify_type
-from neptune.types import File
-from neptune.utils import stringify_unsupported
-from torch.nn import Module
 
 from neptune_detectron2.impl.version import __version__
+
+try:
+    from neptune import Run
+    from neptune.handler import Handler
+    from neptune.internal.utils import verify_type
+    from neptune.types import File
+    from neptune.utils import stringify_unsupported
+except ImportError:
+    from neptune.new.metadata_containers import Run
+    from neptune.new.handler import Handler
+    from neptune.new.internal.utils import verify_type
+    from neptune.new.types import File
+    from neptune.new.utils import stringify_unsupported
+
+from torch.nn import Module
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/detectron2"
 
@@ -67,7 +76,7 @@ class NeptuneHook(hooks.HookBase):
             log_checkpoints=True,  # Log model checkpoints
             smoothing_window_size=10,  # Upload metrics and checkpoints every 10th epoch
         )
-    
+
     For more, see the docs:
         Tutorial: https://docs.neptune.ai/integrations/detectron2/
         API reference: https://docs.neptune.ai/api/integrations/detectron2/
