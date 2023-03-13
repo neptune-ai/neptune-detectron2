@@ -60,7 +60,7 @@ class NeptuneHook(hooks.HookBase):
             for example, run["test"], in which case all metadata is logged under
             the "test" namespace inside the run.
         base_namespace: Root namespace where all metadata logged by the hook is stored.
-        smoothing_window_size: How often NeptuneHook should log metrics (and checkpoints, if
+        metrics_update_freq: How often NeptuneHook should log metrics (and checkpoints, if
             log_checkpoints is set to True). The value must be greater than zero.
             Example: Setting smoothing_window_size=10 will log metrics on every 10th epoch.
         log_model: Whether to upload the final model checkpoint, whenever it is saved by the Trainer.
@@ -87,7 +87,7 @@ class NeptuneHook(hooks.HookBase):
         run: Run | Handler,
         *,
         base_namespace: str = "training",
-        smoothing_window_size: int = 20,
+        metrics_update_freq: int = 20,
         log_model: bool = False,
         log_checkpoints: bool = False,
     ):
@@ -95,7 +95,7 @@ class NeptuneHook(hooks.HookBase):
 
         self._run = run
 
-        self._window_size = smoothing_window_size
+        self._metrics_update_freq = metrics_update_freq
         self.log_model = log_model
         self.log_checkpoints = log_checkpoints
 
@@ -109,10 +109,12 @@ class NeptuneHook(hooks.HookBase):
         self._root_object = self._run.get_root_object() if isinstance(self._run, Handler) else self._run
 
     def _verify_window_size(self) -> None:
-        if self._window_size <= 0:
-            raise ValueError(f"Update freq should be greater than 0. Got {self._window_size}.")
-        if not isinstance(self._window_size, int):
-            raise TypeError(f"Smoothing window size should be of type int. Got {type(self._window_size)} instead.")
+        if self._metrics_update_freq <= 0:
+            raise ValueError(f"Update freq should be greater than 0. Got {self._metrics_update_freq}.")
+        if not isinstance(self._metrics_update_freq, int):
+            raise TypeError(
+                f"Smoothing window size should be of type int. Got {type(self._metrics_update_freq)} instead."
+            )
 
     def _log_integration_version(self) -> None:
         self._root_object[INTEGRATION_VERSION_KEY] = detectron2.__version__
@@ -143,14 +145,14 @@ class NeptuneHook(hooks.HookBase):
 
     def _log_metrics(self) -> None:
         storage = detectron2.utils.events.get_event_storage()
-        for k, (v, _) in storage.latest_with_smoothing_hint(self._window_size).items():
+        for k, (v, _) in storage.latest_with_smoothing_hint(self._metrics_update_freq).items():
             self.base_handler[f"metrics/{k}"].append(v)
 
     def _can_save_checkpoint(self) -> bool:
         return hasattr(self.trainer, "checkpointer") and isinstance(self.trainer.checkpointer, Checkpointer)
 
     def _should_perform_after_step(self) -> bool:
-        return self.trainer.iter % self._window_size == 0
+        return self.trainer.iter % self._metrics_update_freq == 0
 
     def before_train(self) -> None:
         """Logs detectron2 version used, the config that the trainer uses, and the underlying model summary."""
