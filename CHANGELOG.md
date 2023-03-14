@@ -4,6 +4,7 @@
 - Updated integration to be compatible with `neptune 1.0` ([#9](https://github.com/neptune-ai/neptune-detectron2/pull/9))
 - Removed `neptune` and `neptune-client` from base requirements ([#12](https://github.com/neptune-ai/neptune-detectron2/pull/12))
 - Refactored parameter name: `smoothing_window_size` -> `metrics_update_freq` ([#12](https://github.com/neptune-ai/neptune-detectron2/pull/12))
+
 ## neptune-detectron2 0.2.1
 
 ### Fixes
