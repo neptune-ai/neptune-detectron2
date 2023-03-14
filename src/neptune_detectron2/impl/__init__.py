@@ -62,7 +62,7 @@ class NeptuneHook(hooks.HookBase):
         base_namespace: Root namespace where all metadata logged by the hook is stored.
         metrics_update_freq: How often NeptuneHook should log metrics (and checkpoints, if
             log_checkpoints is set to True). The value must be greater than zero.
-            Example: Setting smoothing_window_size=10 will log metrics on every 10th epoch.
+            Example: Setting metrics_update_freq=10 will log metrics on every 10th epoch.
         log_model: Whether to upload the final model checkpoint, whenever it is saved by the Trainer.
             Expects CheckpointHook to be present.
         log_checkpoints: Whether to upload checkpoints whenever they are saved by the Trainer.
@@ -99,7 +99,7 @@ class NeptuneHook(hooks.HookBase):
         self.log_model = log_model
         self.log_checkpoints = log_checkpoints
 
-        self._verify_window_size()
+        self._verify_metrics_update_freq()
 
         if base_namespace.endswith("/"):
             base_namespace = base_namespace[:-1]
@@ -108,13 +108,13 @@ class NeptuneHook(hooks.HookBase):
 
         self._root_object = self._run.get_root_object() if isinstance(self._run, Handler) else self._run
 
-    def _verify_window_size(self) -> None:
-        if self._metrics_update_freq <= 0:
-            raise ValueError(f"Update freq should be greater than 0. Got {self._metrics_update_freq}.")
+    def _verify_metrics_update_freq(self) -> None:
         if not isinstance(self._metrics_update_freq, int):
             raise TypeError(
-                f"Smoothing window size should be of type int. Got {type(self._metrics_update_freq)} instead."
+                f"metrics_update_freq should be of type int. Got {type(self._metrics_update_freq)} instead."
             )
+        if self._metrics_update_freq <= 0:
+            raise ValueError(f"metrics_update_freq should be greater than 0. Got {self._metrics_update_freq}.")
 
     def _log_integration_version(self) -> None:
         self._root_object[INTEGRATION_VERSION_KEY] = detectron2.__version__
