@@ -1,6 +1,9 @@
 import os
 
-from neptune import init_run
+try:
+    from neptune import init_run
+except ImportError:
+    from neptune.new import init_run
 
 from src.neptune_detectron2 import NeptuneHook
 from tests.utils import get_images
