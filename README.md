@@ -1,6 +1,6 @@
 # Neptune - Detectron2 integration
 
-Experiment tracking, dataset and model versioning, and live model monitoring for Dectectron2 trained models.
+Experiment tracking, dataset and model versioning, and live model monitoring for Detectron2 trained models.
 
 ## What will you get with this integration?
 
@@ -31,7 +31,7 @@ In the following example, we set the Trainer to save model checkpoints every 10t
 
 ```python
 neptune_run = neptune.init_run(
-    project="workspace-name/project-name",  
+    project="workspace-name/project-name",
     name="My detectron2 run",
     tags = ["validation"],
     capture_stdout=False,
