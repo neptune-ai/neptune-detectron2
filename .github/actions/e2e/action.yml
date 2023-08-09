@@ -22,7 +22,7 @@ runs:
 
     - name: Install torch
       working-directory: ${{ inputs.working_directory }}
-      run: pip install torch torchvision
+      run: conda install pytorch torchvision -c pytorch | pip install torch torchvision
       shell: bash
 
     - name: Install detectron2
