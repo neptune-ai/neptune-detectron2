@@ -20,6 +20,11 @@ runs:
       run: pip install -e .[dev]
       shell: bash
 
+    - name: Install torch
+      working-directory: ${{ inputs.working_directory }}
+      run: pip install torch torchvision
+      shell: bash
+
     - name: Install detectron2
       working-directory: ${{ inputs.working_directory }}
       run: pip install 'git+https://github.com/facebookresearch/detectron2.git'
