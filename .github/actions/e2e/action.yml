@@ -22,7 +22,7 @@ runs:
 
     - name: Install detectron2
       working-directory: ${{ inputs.working_directory }}
-      run: pip install 'git+https://github.com/facebookresearch/detectron2.git'
+      run: python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
       shell: bash
 
     - name: Run tests
