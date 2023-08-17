@@ -1,12 +1,13 @@
 # Neptune - Detectron2 integration
 
-Experiment tracking, dataset and model versioning, and live model monitoring for Detectron2 trained models.
+Experiment tracking for Detectron2-trained models.
 
 ## What will you get with this integration?
 
-* Log, display, organize, and compare ML experiments in a single place
-* Version, store, manage, and query trained models and model metadata
-* Record and monitor model training, evaluation, or production runs live
+* Log, organize, visualize, and compare ML experiments in a single place
+* Monitor model training live
+* Version and query production-ready models and associated metadata (e.g., datasets)
+* Collaborate with the team and across the organization
 
 ## What will be logged to Neptune?
 
@@ -16,7 +17,6 @@ Experiment tracking, dataset and model versioning, and live model monitoring for
 * [Other metadata](https://docs.neptune.ai/logging/what_you_can_log)
 
 ![image](https://neptune.ai/wp-content/uploads/2023/07/detectron2-integration-dashboard.jpg)
-*Example dashboard showing what you can track in Neptune*
 
 ## Resources
 
