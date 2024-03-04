@@ -62,7 +62,7 @@ class NeptuneHook(hooks.HookBase):
         base_namespace: Root namespace where all metadata logged by the hook is stored.
         metrics_update_freq: How often NeptuneHook should log metrics (and checkpoints, if
             log_checkpoints is set to True). The value must be greater than zero.
-            Example: Setting metrics_update_freq=10 will log metrics on every 10th epoch.
+            Example: Setting metrics_update_freq=10 will log metrics on every 10th iteration.
         log_model: Whether to upload the final model checkpoint, whenever it is saved by the Trainer.
             Expects CheckpointHook to be present.
         log_checkpoints: Whether to upload checkpoints whenever they are saved by the Trainer.
