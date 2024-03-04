@@ -6,11 +6,15 @@ inputs:
     description: "Working directory"
     required: false
     default: .
+  os:
+    description: "OS"
+    required: false
+    default: "ubuntu-latest"
 runs:
   using: "composite"
   steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: neptune-ai/neptune-detectron2
         path: ${{ inputs.working_directory }}
@@ -20,9 +24,16 @@ runs:
       run: pip install -e .[dev]
       shell: bash
 
-    - name: Install detectron2
+    - name: Install detectron2 (ubuntu)
+      if: ${{ inputs.os != 'macos-latest'}}
       working-directory: ${{ inputs.working_directory }}
       run: python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+      shell: bash
+
+    - name: Install detectron2 (macOS)
+      if: ${{ inputs.os == 'macos-latest'}}
+      working-directory: ${{ inputs.working_directory }}
+      run: CC=clang CXX=clang++ ARCHFLAGS="-arch x86_64" python -m pip install -U 'git+https://github.com/facebookresearch/detectron2.git' --no-build-isolation
       shell: bash
 
     - name: Run tests
