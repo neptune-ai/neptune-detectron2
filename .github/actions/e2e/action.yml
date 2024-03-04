@@ -18,11 +18,15 @@ runs:
       with:
         repository: neptune-ai/neptune-detectron2
         path: ${{ inputs.working_directory }}
-
+    - name: Upgrade pip
+      run: python -m pip install --upgrade pip
     - name: Install dependencies
       working-directory: ${{ inputs.working_directory }}
       run: pip install -e .[dev]
       shell: bash
+
+    - name: debug
+      run: echo ${{ ${{ inputs.os }}
 
     - name: Install detectron2 (ubuntu)
       if: ${{ inputs.os != 'macos-latest'}}
