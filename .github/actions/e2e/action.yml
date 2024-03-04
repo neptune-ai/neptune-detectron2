@@ -27,7 +27,7 @@ runs:
       shell: bash
 
     - name: debug
-      run: echo ${{ inputs.os }}
+      run: echo ${{ runner.os }}
       shell: bash
 
     - name: Install detectron2 (ubuntu)
